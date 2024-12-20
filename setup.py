@@ -11,7 +11,7 @@ setup(
     extras_require={
         "dynamixel": ["dynamixel_sdk"]  # Optional dependencies
     },
-    author="Your Name",
-    author_email="youremail@example.com",
+    author="JoostSchink",
+    author_email="j.j.schinkelshoek@student.tudelft.nl",
     description="A sample Python project",
 )
