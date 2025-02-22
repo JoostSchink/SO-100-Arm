@@ -1,0 +1,8 @@
+Metadata-Version: 2.1
+Name: SO-100-Arm
+Version: 3.13
+Summary: A sample Python project
+Author: Your Name
+Author-email: youremail@example.com
+Provides-Extra: dynamixel
+Requires-Dist: dynamixel_sdk; extra == "dynamixel"
