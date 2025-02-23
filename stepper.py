@@ -1,30 +1,59 @@
+from flask import Flask, render_template_string, request 
+from time import sleep
 import RPi.GPIO as GPIO
-import time
+from RpiMotorLib import RpiMotorLib
 
-# Use Broadcom pin numbering
-GPIO.setmode(GPIO.BCM)
+#define GPIO pins
+GPIO_pins = (14, 15, 18) # Microstep Resolution MS1-MS3 -> GPIO Pin
+direction= 20       # Direction -> GPIO Pin
+step = 21      # Step -> GPIO Pin
 
-# Define the GPIO pins (update these to your wiring)
-STEP_PIN = 18  # GPIO pin connected to TMC2310 STEP input
-DIR_PIN = 23   # GPIO pin connected to TMC2310 DIR input
+# Declare an named instance of class pass GPIO pins numbers
+mymotortest = RpiMotorLib.A4988Nema(direction, step, GPIO_pins, "A4988")
 
-# Set up the GPIO pins as outputs
-GPIO.setup(STEP_PIN, GPIO.OUT)
-GPIO.setup(DIR_PIN, GPIO.OUT)
+app = Flask(__name__)
 
-# Set motor direction (GPIO.HIGH or GPIO.LOW)
-GPIO.output(DIR_PIN, GPIO.HIGH)
+#HTML Code 
 
-# Define the number of steps and delay between steps
-num_steps = 200        # Change this to how many steps you need
-step_delay = 0.001     # Delay in seconds (adjust for your speed)
+TPL = '''
+<html>
+     <img src="https://iotdesignpro.com/sites/default/files/Iot%20Design%20Pro%20Logo_0.png" alt="">
+    <head><title>Web Page Controlled Stepper</title></head>
+    <body>
+    <h2> Web Page to Control Stepper</h2>
+        <form method="POST" action="test">
+            <h5> Use the slider to rotate Stepper Clockwise & Counter-Clockwise  </h5>
+            <p>Slider   <input type="range" min="1" max="20" name="slider" /> </p>
+            <input type="submit" value="submit" />
+        </form>
+    </body>
+</html>
 
-# Pulse the step pin to move the motor
-for step in range(num_steps):
-    GPIO.output(STEP_PIN, GPIO.HIGH)
-    time.sleep(step_delay)
-    GPIO.output(STEP_PIN, GPIO.LOW)
-    time.sleep(step_delay)
 
-# Clean up GPIO settings
-GPIO.cleanup()
+'''
+ 
+@app.route("/")
+def home():
+
+    return render_template_string(TPL)
+ 
+@app.route("/test", methods=["POST"])
+def test():
+    # Get slider Values
+    slider = request.form["slider"]
+    print(int(slider))
+  
+    if (int(slider)>10):
+       mymotortest.motor_go(True, "Full" , 600,int(slider)*.0004, False, .05)
+       print("Rotating Clockwise")
+    
+    if (int(slider)<10):
+       mymotortest.motor_go(False, "Full" , 600,int(slider)*.001, False, .05)
+       print("Rotating Anti-Clockwise")
+
+    
+    return render_template_string(TPL)
+ 
+# Run the app on the local development server
+if __name__ == "__main__":
+    app.run()
